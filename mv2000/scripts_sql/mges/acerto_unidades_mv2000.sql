@@ -801,4 +801,6 @@ WHERE cd_itunidade IN (
 576, 584, 611, 663, 702, 656, 566, 1060, 595, 927, 950, 948, 949, 921, 1044, 1050, 1063, 619, 705,
 706, 607, 613, 839, 1048, 995, 988, 641, 717, 901, 981, 984, 745, 743, 980, 744, 772, 902, 1037);
 
+-- Torna as modificações permanentes no banco de dados. Só faça isso se souber exatamente
+-- o que está fazendo. Ou melhor, não faça isso de jeito nenhum!!
 --COMMIT;

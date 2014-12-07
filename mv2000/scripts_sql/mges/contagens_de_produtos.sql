@@ -32,6 +32,8 @@ INNER JOIN classe c ON (e.CD_ESPECIE = c.CD_ESPECIE)
 INNER JOIN produto p ON (p.cd_especie = e.CD_ESPECIE
                         AND
                         p.cd_classe = c.CD_CLASSE)
+WHERE p.sn_movimentacao = 'S'
+  AND p.sn_bloqueio_de_compra = 'N'
 GROUP BY e.DS_ESPECIE, c.DS_CLASSE
 ORDER BY e.ds_especie, c.ds_classe
 ;
@@ -54,6 +56,8 @@ INNER JOIN produto p ON (p.cd_especie = e.CD_ESPECIE
                         p.cd_classe = c.CD_CLASSE
                         AND
                         p.cd_sub_cla = sc.CD_SUB_CLA)
+WHERE p.sn_movimentacao = 'S'
+  AND p.sn_bloqueio_de_compra = 'N'
 GROUP BY e.DS_ESPECIE, c.DS_CLASSE, sc.DS_SUB_CLA
 ORDER BY e.ds_especie, c.ds_classe, sc.ds_sub_cla
 ;

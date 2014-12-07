@@ -19,20 +19,21 @@
 ROLLBACK;
 
 UPDATE unidade
-SET ds_unidade = substr('ZINATIVO ' || REPLACE(ds_unidade, 'NAO_UTIIZAR_', ''), 0, 30)
+SET ds_unidade = substr('ZZINATIVO ' || REPLACE(ds_unidade, 'NAO_UTIIZAR_', ''), 0, 30)
 WHERE cd_unidade IN (
-'AMP',
 '1/4',
+'AMP',
 'BALDE',
 'BARRA',
 'BL',
 'BOB',
 'BOLSA',
 'BOMB',
-'CH',
 'CX',
 'CAP',
 'CAR',
+'CM',
+'CH',
 'COMP',
 '13451',
 'CONJ',
@@ -48,18 +49,25 @@ WHERE cd_unidade IN (
 'GL',
 'GRF',
 '13335',
+'GT',
+'G',
 'IT',
 'JOGO',
 'LATA',
 'L',
 'MC',
 'M',
+'M3',
 'MLI',
-'NP',
+'M2',
+'MG',
+'ML',
 'CLIPES',
 'FR.GOT',
 'PT',
+'NP',
 'PCT',
+'PAR',
 'PECA',
 'KG',
 'REFIL',
@@ -76,25 +84,29 @@ WHERE cd_unidade IN (
 'TN',
 'TBT',
 'TB',
+'UND',
+'UI',
 'UNP',
-'PAR'
+'UTR',
+'MCG'
 );
 
 UPDATE itunidade
-set ds_itunidade = substr('ZINATIVO ' || ds_itunidade, 0, 30)
+set ds_itunidade = substr('ZZINATIVO ' || ds_itunidade, 0, 30)
 where cd_unidade in (
-'AMP',
 '1/4',
+'AMP',
 'BALDE',
 'BARRA',
 'BL',
 'BOB',
 'BOLSA',
 'BOMB',
-'CH',
 'CX',
 'CAP',
 'CAR',
+'CM',
+'CH',
 'COMP',
 '13451',
 'CONJ',
@@ -110,18 +122,25 @@ where cd_unidade in (
 'GL',
 'GRF',
 '13335',
+'GT',
+'G',
 'IT',
 'JOGO',
 'LATA',
 'L',
 'MC',
 'M',
+'M3',
 'MLI',
-'NP',
+'M2',
+'MG',
+'ML',
 'CLIPES',
 'FR.GOT',
 'PT',
+'NP',
 'PCT',
+'PAR',
 'PECA',
 'KG',
 'REFIL',
@@ -138,8 +157,17 @@ where cd_unidade in (
 'TN',
 'TBT',
 'TB',
+'UND',
+'UI',
 'UNP',
-'PAR');
+'UTR',
+'MCG'
+);
+
+
+/*
+-- Resolvi não rodar estes comandos para deixar tudo inativado mesmo,
+-- descrito como ZZINATIVO.
 
 UPDATE itunidade
 SET ds_itunidade = 'ROLO 1000 CM'
@@ -794,12 +822,14 @@ SET ds_itunidade = 'FRASCO AMPOLA 2000 UTR'
 WHERE cd_itunidade = 865;
 
 UPDATE itunidade
-set ds_itunidade = substr('ZINATIVO ' || replace(ds_itunidade, 'NAO_UTILIZAR_', ''), 0, 30)
+set ds_itunidade = substr('ZZINATIVO ' || replace(ds_itunidade, 'NAO_UTILIZAR_', ''), 0, 30)
 WHERE cd_itunidade IN (
 704, 708, 709, 710, 711, 712, 565, 592, 573, 572, 593, 587, 591, 605, 1047, 1062, 615, 913, 1005,
 914, 911, 915, 726, 597, 907, 909, 855, 875, 768, 1068, 1043, 946, 976, 727, 1006, 966, 583, 569,
 576, 584, 611, 663, 702, 656, 566, 1060, 595, 927, 950, 948, 949, 921, 1044, 1050, 1063, 619, 705,
 706, 607, 613, 839, 1048, 995, 988, 641, 717, 901, 981, 984, 745, 743, 980, 744, 772, 902, 1037);
+
+*/
 
 -- Torna as modificações permanentes no banco de dados. Só faça isso se souber exatamente
 -- o que está fazendo. Ou melhor, não faça isso de jeito nenhum!!

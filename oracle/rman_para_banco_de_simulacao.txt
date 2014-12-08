@@ -1,0 +1,186 @@
+-- ====================================== --
+-- RMAN para banco de simulação do MV2000 --
+-- ====================================== --
+-- Por: Abrantes Araújo Silva Filho
+--      abrantesasf@gmail.com
+-- Em: 2014-12-08
+
+Este breve passo a passo lista as principais etapas para se criar um banco de
+simulação do MV2000 através de um backup do banco de produção realizado
+com o RMAN. Se o backup foi realizado de outra forma, este passo a passo
+não servirá.
+
+Por favor, não siga os passos abaixo se não souber EXATAMENTE o que está
+fazendo! Não arrisque: brincar com o banco de dados é extremamente perigoso!!
+
+
+
+1) Instalar o sistema operacional:
+==================================
+Instale o SuSE Linux Enterprise Server 11 SP3 em um servidor 64 bits com,
+pelo menos, 8 GB RAM. Não vou detalhar a instalação aqui, se vire.
+
+
+
+2) Instalar o Oracle 10gR2 (10.2.0.3.0):
+========================================
+LEIA ESTA SEÇÃO TOTALMENTE ANTES DE INSTALAR!
+
+O Oracle que está rodando no banco de produção do MV2000 é a versão 10gR2
+(10.2.0.3.0) portanto é essa mesma versão que deverá ser instalada no
+servidor de simulação.
+
+Você terá que instalar a versão 10.2.0.1.0 (que é a release inicial da
+versão 10gR2) e depois instalar o patch para atualizar a versão para
+a 10.2.0.3.0.
+
+Faça somente a instalação via software e não crie nenhum banco
+de dados durante a instalação.
+
+<falta muito para terminar, depois acabo>
+
+
+
+4) Criar as estruturas de diretórios básicos:
+=============================================
+Como somente o software do Oracle está instalado e não temos nenhum banco de
+dados configurado teremos que criar os diretórios para armazenar o banco do
+MV2000, de acordo com a estrutura já existente no banco de produção.
+
+Para isso, como usuário "oracle", dê os seguintes comandos:
+
+   cd $ORACLE_BASE (irá para o diretório /u01/app/oracle)
+   mkdir flash_recovery_area
+   mkdir admin
+   cd admin
+   mkdir mv2000
+   cd mv2000
+   mkdir adump bdump cdump udump
+
+Agora, como usuário "root", dê os seguintes comandos:
+   cd /
+   mkdir -p /u02/oradata/mv2000
+   mkdir -p /u03/oradata/mv2000
+   mkdir -p /u04/oradata/mv2000/arch
+   mkdir -p /u05/oradata/mv2000
+   mkdir -p /u06/oradata/mv2000
+   mkdir -p /u04/backup/rman/mv2000
+   chown oracle:oinstall /u0? -R
+
+
+
+5) Copiar o backup do RMAN para o diretório correto:
+====================================================
+Agora é necessário copiar todos os arquivos de backup do RMAN do banco de
+produção (que estão no diretório /u04/backup/rman/mv2000 do servidor
+de produção) para o mesmo diretório do servidor de simulação.
+
+Essa cópia pode ser feita via rsync. Nesse caso entre no banco de PRODUÇÃO
+e, como usuário "oracle" dê os seguintes comandos (não se esqueça das
+barras finais no nome dos diretórios, elas são importantes - consulte a
+documentação do rsync para aprender):
+
+   cd /u04/backup/rman
+   rsync -zuva mv2000/ oracle@192.168.1.85:/u04/backup/rman/mv2000/
+
+Obviamente a senha do usuário "oracle" no servidor de simulação será
+solicitada.
+
+
+
+6) Restaurar o initfile:
+========================
+Se o backup do RMAN está bem configurado, você terá uma cópia do initfile
+em /u04/backup/rman/mv2000 (no servidor de simulação). Se não, você
+terá que gerar um init a partir do banco de produção (e brigar com quem
+configurou o backup) e mandar para o diretório correto no servidor
+de simulação.
+
+Agora você deve restaurar a cópia do init file. Como usuário "oracle"
+execute os seguintes comandos:
+
+   cp /u04/backup/rman/mv2000/initmv2000.ora $ORACLE_HOME/dbs/
+
+
+
+7) Restaurar os controlfiles:
+=============================
+Agora que você já tem os arquivos de backup do RMAN e o initfile,
+podemos iniciar a recuperação do backup.
+
+Como usuário "oracle" entre no RMAN com o comando:
+
+   rman target /
+
+Agora, de dentro do RMAN execute os seguintes comandos:
+
+   startup nomount;
+   restore controlfile from '/u04/backup/rman/mv2000/c-101508431-20141208-00';
+
+Atenção: o nome do controlfile indicado acima irá mudar de acordo com a
+data do backup. Ajuste o nome do controlfile.
+
+
+
+8) Montar o banco de dados e restaurar os datafiles:
+====================================================
+Ainda dentro do RMAN execute os seguintes comandos:
+
+   alter database mount;
+   restore database;
+
+Sente (ou melhor, deite) e espere pois o restore dos datafiles vai demorar
+HORAS para terminar (de 4 a 6 horas mais ou menos). Fique vigiando se tudo
+correu bem e se não deu nenhum erro.
+
+
+
+9) Fazer o recovery dos dados:
+==============================
+Ainda dentro do RMAN execute o seguinte comando:
+
+   recover database;
+
+O recovery dos dados vai demorar um pouco, coisa de uns 10 a 30 minutos e,
+no final, vai dar um ERRO JÁ ESPERADO. Esse erro já é esperado e ocorre
+porque estamos restaurando a partir do backup dos datafiles e dos
+archives, mas não temos os online redo log files que não tinham sido
+arquivados. Não se desespere. Na mensagem de erro, procure umas linhas
+parecidas com as seguintes:
+
+(... output omitido ...)
+unable to find archive log                                                                  
+archive log thread=1 sequence=8340
+(... output omitido ...)
+
+Agora já sabemos que o RMAN só consegue recuperar os dados até o archive
+8340. Então, de posse dessa informação, vamos repetir o comando para
+o recover do banco indicando explicitamente para parar nesse archive.
+Ainda dentro do RMAN execute o seguinte comando:
+
+   recover database until sequence 8340;
+
+Não preciso dizer que você tem que ajustar o comando acima de acordo
+com a situação real, não é mesmo?
+
+
+
+10) Abrir o banco de dados e resetar os logs:
+=============================================
+Se tudo correu bem até aqui, agora basta abrir o banco de dados
+com a opção resetlogs. Ainda dentro do RMAN execute o seguinte
+comando:
+
+   alter database open resetlogs;
+
+Se tudo correu bem o banco de dados irá abrir e pronto!, você já está
+com uma cópia atualizada do banco de produção no servidor de simulação.
+Já pode sair do RMAN:
+
+   exit
+
+
+
+11) Outros ajustes:
+===================
+Agora você tem que ajustar o listener, o tnsnames, etc. Se vire.

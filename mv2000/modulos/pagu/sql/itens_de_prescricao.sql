@@ -1,5 +1,17 @@
-DROP VIEW aasf_vw_itens_prescricao;
+-- ITENS DE PRECRIÇÃO, COMPONENTES E VIAS DE APLICAÇÃO
+-- ===================================================
+-- Este arquivo contém os scripts necessários à criação de um relatório de conferência
+-- dos itens de prescrição cadastrados no MV, incluindo a criação de 3 views para facilitar
+-- as queries.
+-- Por: Abrantes Araújo Silva Filho
+--      abrantesasf@gmail.com
+-- Em: 2014-12-05
 
+
+
+-- VIEW DE ITENS DE PRESCRIÇÃO:
+-------------------------------
+--DROP VIEW aasf_vw_itens_prescricao;
 CREATE OR REPLACE VIEW aasf_vw_itens_prescricao AS
 SELECT tp.cd_tip_presc AS cd_tip_presc,
        tp.ds_tip_presc AS ds_tip_presc,
@@ -47,16 +59,16 @@ LEFT JOIN tip_esq esq ON (esq.cd_tip_esq = tp.cd_tip_esq)
 LEFT JOIN produto prod ON (prod.cd_produto = tp.cd_produto)
 LEFT JOIN uni_pro up ON (tp2.cd_uni_pro = up.cd_uni_pro)
 LEFT JOIN uni_pro up2 ON (tp3.cd_uni_pro = up2.cd_uni_pro
-                           AND tp3.cd_uni_pro_cons = up2.cd_uni_pro)
-LEFT JOIN pro_fat pf ON (pf.cd_pro_fat = tp.cd_pro_fat);
+                          AND
+                          tp3.cd_uni_pro_cons = up2.cd_uni_pro)
+LEFT JOIN pro_fat pf ON (pf.cd_pro_fat = tp.cd_pro_fat)
+;
 
 
-SELECT *
-FROM AASF_vw_ITENS_PRESCRICAO
-where cd_item_presc = 2008;
 
-
-DROP VIEW aasf_vw_componentes_presc;
+-- VIEW DOS COMPONENTES DO ITEM DE PRESCRIÇÃO:
+----------------------------------------------
+--DROP VIEW aasf_vw_componentes_presc;
 CREATE OR REPLACE VIEW aasf_vw_componentes_presc AS
 SELECT c.cd_tip_presc_componente AS cd_tip_presc_componente,
        tp.ds_tip_presc AS componente,
@@ -70,23 +82,28 @@ SELECT c.cd_tip_presc_componente AS cd_tip_presc_componente,
           'F', 'Sim',
           'A', 'Não',
           '?') AS multiplica,
-       c.cd_tip_presc AS cd_tip_presc
+       c.cd_tip_presc AS cd_tiaasf_vw_vias_aplicp_presc
 FROM compon c
-INNER JOIN tip_presc tp ON (tp.cd_tip_presc = c.cd_tip_presc_componente);
+INNER JOIN tip_presc tp ON (tp.cd_tip_presc = c.cd_tip_presc_componente)
+;
 
-select 
 
 
-desc compon;
-SELECT *
-FROM compon
-where cd_tip_presc = 2036;
+-- VIEW DAS VIAS DE APLICAÇÃO DO ITEM DE PRESCRIÇÃO:
+----------------------------------------------------
+--DROP VIEW aasf_vw_vias_aplic;
+CREATE OR REPLACE VIEW aasf_vw_vias_aplic AS
+SELECT f.cd_for_apl || ' - ' || f.ds_for_apl via,
+       v.cd_tip_presc cd_tip_presc
+FROM tip_presc_for_apl v
+INNER JOIN for_apl f ON (v.cd_for_apl = f.cd_for_apl)
+;
 
-SELECT *
-FROM AASF_VW_COMPONENTES_PRESC
-where CD_tip_PRESC = 2008;
 
-SELECT cd_item_presc,
+
+-- ITENS DE PRESCRIÇÃO:
+-----------------------
+SELECT cd_tip_presc,
        ds_tip_presc,
        ativo,
        padronizado,
@@ -109,31 +126,44 @@ SELECT cd_item_presc,
        via_padrao,
        obs_padrao
 FROM aasf_vw_itens_prescricao
-ORDER BY ds_tip_presc;
+ORDER BY ds_tip_presc
+;
 
-SELECT cd_componente,
+
+
+-- COMPONENTES DO ITEM DE PRESCRIÇÃO:
+-------------------------------------
+SELECT cd_tip_presc_componente,
        componente,
        qtd,
        via,
        exibe,
        multiplica,
-       cd_item_presc
+       cd_tip_presc
 FROM aasf_vw_componentes_presc
-ORDER BY componente;
+ORDER BY componente
+;
 
-CREATE OR REPLACE VIEW aasf_vw_vias_aplic AS
-SELECT f.cd_for_apl || ' - ' || f.ds_for_apl via,
-       v.cd_tip_presc cd_item_presc
-FROM tip_presc_for_apl v
-INNER JOIN for_apl f ON (v.cd_for_apl = f.cd_for_apl);
 
+
+-- VIAS DE APLICAÇÃO DOS ITENS DE PRESCRIÇÃO:
+---------------------------------------------
 SELECT via,
-       cd_item_presc
-from aasf_vw_vias_aplic;
+       cd_tip_presc
+from aasf_vw_vias_aplic
+;
 
 
+
+-- ITENS DE PRESCRIÇÃO E SEUS COMPONENTES:
+------------------------------------------
 SELECT i.ds_tip_presc,
-       c.componente
+       c.componente,
+       c.qtd,
+       c.via,
+       c.exibe,
+       c.multiplica
 FROM AASF_VW_ITENS_PRESCRICAO i
 INNER JOIN AASF_VW_COMPONENTES_PRESC c ON (i.CD_tip_PRESC = c.cd_tip_presc)
-where i.CD_tip_PRESC = 2036;
+--WHERE i.CD_tip_PRESC = 2036
+;

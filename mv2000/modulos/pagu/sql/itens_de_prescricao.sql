@@ -82,7 +82,7 @@ SELECT c.cd_tip_presc_componente AS cd_tip_presc_componente,
           'F', 'Sim',
           'A', 'Não',
           '?') AS multiplica,
-       c.cd_tip_presc AS cd_tiaasf_vw_vias_aplicp_presc
+       c.cd_tip_presc AS cd_tip_presc
 FROM compon c
 INNER JOIN tip_presc tp ON (tp.cd_tip_presc = c.cd_tip_presc_componente)
 ;

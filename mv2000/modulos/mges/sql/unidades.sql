@@ -15,7 +15,8 @@ SELECT cd_unidade AS "Cód. Unid. Básicas",
        ds_unidade AS "Descrição",
        vl_fator "Fator"
 FROM unidade
-WHERE ds_unidade NOT LIKE '%INATIVO%'
+--WHERE ds_unidade NOT LIKE '%INATIVO%'
+WHERE ds_unidade NOT LIKE '*%'
 ORDER BY ds_unidade;
 
 
@@ -34,5 +35,6 @@ SELECT u.cd_unidade AS "Cód. Unid. Básicas",
        it.vl_fator AS "Fator Unid. Auxiliares"
 FROM unidade u
 INNER JOIN itunidade it ON (it.cd_unidade = u.cd_unidade)
-WHERE it.ds_itunidade NOT LIKE '%INATIVO%'
+--WHERE it.ds_itunidade NOT LIKE '%INATIVO%'
+WHERE it.ds_itunidade NOT LIKE '*%'
 ORDER BY u.ds_unidade, it.ds_itunidade;
